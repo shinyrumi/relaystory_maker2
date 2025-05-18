@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>릴레이 이야기 공작소 📝 (Sheets 저장)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&family=Nanum+Pen+Script&family=Stylish&family=Sunflower:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sunflower', sans-serif;
+            background-image: url("https://www.transparenttextures.com/patterns/stitched-wool.png");
+        }
+        .font-gaegu { font-family: 'Gaegu', cursive; }
+        .font-nanum-pen { font-family: 'Nanum Pen Script', cursive; }
+        .font-stylish { font-family: 'Stylish', sans-serif; }
+
+        .container-wrapper {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 5px groove #fecaca; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 0 15px rgba(255,255,255,0.7), 0 0 0 18px #fecaca;
+        }
+
+        .title-text {
+            font-family: 'Stylish', sans-serif;
+            font-size: 3.2rem; 
+            letter-spacing: 2px;
+            text-shadow: 3px 3px 0px #fef3c7, 5px 5px 0px #fde68a, 2px 2px 8px rgba(0,0,0,0.2); 
+        }
+        .choice-button {
+            font-family: 'Gaegu', cursive;
+            font-size: 1.2rem; 
+            border: 3px outset; 
+            transition: all 0.2s ease-out;
+            box-shadow: 0 5px 10px -2px rgba(0,0,0,0.15), 0 3px 7px -2px rgba(0,0,0,0.1);
+        }
+        .choice-button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 25px -5px rgba(0,0,0,0.2), 0 8px 10px -6px rgba(0,0,0,0.15);
+        }
+        .story-stage-card {
+            background-color: #feefc7; 
+            border: 3px dashed #fcd34d; 
+            box-shadow: 7px 7px 0px #fca120; 
+        }
+        .story-stage-name { font-family: 'Nanum Pen Script', cursive; font-size: 3rem; color: #d97706; }
+        .story-stage-prompt { font-family: 'Sunflower', sans-serif; font-size: 1.2rem; color: #b45309; }
+
+        .story-output-card {
+            background-color: #e0f2fe; 
+            border: 3px dotted #7dd3fc; 
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+            background-image: url("https://www.transparenttextures.com/patterns/worn-dots.png");
+        }
+        .story-output-card h3 { font-family: 'Stylish', sans-serif; color: #0369a1; } 
+        .story-output-text { font-family: 'Nanum Pen Script', cursive; font-size: 1.7rem; line-height: 2.6rem; color: #075985; } 
+        .story-segment { margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px dashed #bae6fd; } 
+        .story-segment:last-child { border-bottom: none; }
+        .segment-author { font-family: 'Gaegu', cursive; font-size: 1rem; color: #0c4a6e; display: block; margin-bottom: 0.3rem; font-weight: bold;} 
+        
+        .completed-story-card {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0); 
+            border: 4px solid #86efac; 
+        }
+        .completed-story-card h2 { font-family: 'Stylish', sans-serif; color: #15803d; } 
+        .completed-story-text { font-family: 'Nanum Pen Script', cursive; font-size: 1.8rem; line-height: 2.7rem; color: #14532d; } 
+        
+        .text-input-area { 
+            border: 3px dashed #fda4af; background-color: #fff1f2; padding: 1rem; border-radius: 0.5rem; margin-top: 1.5rem; margin-bottom: 1.5rem;
+        }
+        .text-input-area textarea, .text-input-area input {
+            font-family: 'Gaegu', cursive; border-color: #f43f5e; width: 100%; padding: 0.5rem; border-width: 2px; border-radius: 0.375rem;
+        }
+        .text-input-area button { font-family: 'Stylish', sans-serif; }
+        .text-input-area label { display: block; font-size: 0.875rem; font-weight: 500; color: #be123c; margin-bottom: 0.25rem; }
+
+        #message-box { /* 이전 스타일 유지 */ }
+        .control-button { 
+            font-family: 'Stylish', sans-serif; font-size: 1.2rem; border: 3px outset;
+            padding: 0.7rem 1.8rem; margin: 0.5rem; border-radius: 9999px; 
+            transition: all 0.2s ease-in-out;
+        }
+        .control-button:hover { transform: scale(1.05); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+        .decision-button { font-family: 'Stylish', sans-serif !important; font-size: 1.2rem !important; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="container-wrapper p-6 sm:p-10 rounded-3xl w-full max-w-4xl">
+        <header class="mb-10 text-center">
+            <img src="https://placehold.co/130x130/fde68a/f59e0b?text=Sheets&font=Gaegu" alt="시트 저장 아이콘" class="mx-auto mb-5 rounded-full shadow-xl border-4 border-white">
+            <h1 class="title-text text-orange-500">릴레이 이야기 공작소 📝</h1>
+            <p class="text-slate-700 mt-4 text-xl font-gaegu">친구들과 함께 상상의 나래를 펼쳐 Google Sheets에 기록해봐요!</p>
+        </header>
+
+        <div id="initial-setup-section" class="text-input-area">
+            <h3 class="text-xl font-stylish text-rose-600 mb-3 text-center">이야기 시작 준비!</h3>
+            <div>
+                <label for="student-name">이름:</label>
+                <input type="text" id="student-name" placeholder="예: 홍길동">
+            </div>
+            <div class="mt-3">
+                <label for="student-id">학번 (또는 별명):</label>
+                <input type="text" id="student-id" placeholder="예: 10101 또는 이야기요정">
+            </div>
+            <div class="mt-4">
+                <label for="paste-story-area">이어서 작성할 이야기가 있다면 여기에 붙여넣으세요 (없으면 비워두세요):</label>
+                <textarea id="paste-story-area" rows="5" placeholder="이전에 친구가 전달해준 이야기 내용을 여기에 붙여넣으세요..."></textarea>
+            </div>
+            <button id="start-story-button" class="mt-4 w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md text-lg">
+                이야기 시작 또는 이어가기!
+            </button>
+        </div>
+
+        <div id="main-story-interface" class="hidden"> 
+            <div id="stage-info" class="story-stage-card mb-8 p-6 rounded-xl relative">
+                <img src="https://placehold.co/60x60/d1d5db/4b5563?text=Idea&font=NanumPenScript" alt="아이디어 아이콘" class="absolute top-[-25px] left-[-25px] transform rotate-[-20deg] opacity-80">
+                <h2 id="stage-name-display" class="story-stage-name mb-2"></h2>
+                <p id="stage-prompt-display" class="story-stage-prompt"></p>
+                <p id="instruction-text-display" class="instruction-text mt-3">아래 선택지를 고르거나 직접 내용을 추가하여 이야기를 이어가세요.</p>
+            </div>
+
+            <div id="choices-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6"></div>
+            
+            <div id="user-input-section" class="text-input-area hidden">
+                <textarea id="user-custom-text" rows="3" placeholder="여기에 나만의 이야기를 자유롭게 적어보세요..."></textarea>
+                <button id="add-custom-text-button" class="mt-3 w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md text-lg">
+                    이 내용 추가 & Sheets에 저장!
+                </button>
+            </div>
+
+            <div id="story-output-container" class="story-output-card mb-8 p-6 rounded-lg min-h-[200px] sm:min-h-[250px] relative">
+                <img src="https://placehold.co/70x70/c7d2fe/4338ca?text=Scroll&font=Gaegu" alt="두루마리 아이콘" class="absolute bottom-[-30px] right-[-25px] opacity-75 transform rotate-[10deg]">
+                <h3 class="text-2xl font-bold mb-4">📖 지금까지의 이야기 스케치:</h3>
+                <div id="story-output" class="story-output-text">
+                    이야기가 여기에 스케치됩니다...
+                </div>
+            </div>
+            <div class="text-center mb-6">
+                 <button id="copy-current-story-button" class="control-button bg-sky-500 hover:bg-sky-600 text-white border-sky-600">📋 현재까지 이야기 복사 (다음 친구에게)</button>
+            </div>
+        </div>
+        
+        <div id="completed-story-container" class="completed-story-card hidden mb-6 p-8 rounded-xl text-center">
+            <img src="https://placehold.co/130x130/fef08a/eab308?text=Tada&font=Gaegu" alt="완성 축하 아이콘" class="mx-auto mb-5">
+            <h2 class="text-4xl font-bold mb-4">🎉 드디어, 나만의 대서사시 완성! 🎉</h2>
+            <div id="final-story-output" class="completed-story-text text-left p-5 bg-white/60 rounded-lg min-h-[200px]"></div>
+        </div>
+
+        <div id="controls" class="text-center mt-10 flex flex-wrap justify-center">
+            <button id="reset-button" class="control-button bg-red-400 hover:bg-red-500 text-white border-red-500">🗑️ 모든 내용 지우고 완전 처음부터</button>
+        </div>
+    </div>
+
+    <div id="message-box" class="bg-slate-800 text-white"></div>
+
+    <script>
+        // #############################################################################
+        // ## 중요! 아래 변수에 선생님의 Google Apps Script 웹 앱 URL을 넣어주세요! ##
+        // #############################################################################
+        const APPS_SCRIPT_WEB_APP_URL = ""; // 예: "https://script.google.com/macros/s/여기에_선생님의_웹앱_ID/exec";
+        // 만약 APPS_SCRIPT_WEB_APP_URL이 비어있으면, Google Sheets 저장은 시도되지 않습니다.
+
+        // DOM 요소들 (이전과 유사)
+        const initialSetupSection = document.getElementById('initial-setup-section');
+        const studentNameInput = document.getElementById('student-name');
+        const studentIdInput = document.getElementById('student-id');
+        const pasteStoryArea = document.getElementById('paste-story-area');
+        const startStoryButton = document.getElementById('start-story-button');
+        const mainStoryInterface = document.getElementById('main-story-interface');
+        const stageNameDisplay = document.getElementById('stage-name-display');
+        const stagePromptDisplay = document.getElementById('stage-prompt-display');
+        const instructionTextDisplay = document.getElementById('instruction-text-display');
+        const choicesContainer = document.getElementById('choices-container');
+        const storyOutput = document.getElementById('story-output');
+        const resetButton = document.getElementById('reset-button'); 
+        const copyCurrentStoryButton = document.getElementById('copy-current-story-button');
+        const stageInfoDiv = document.getElementById('stage-info');
+        const storyOutputContainer = document.getElementById('story-output-container');
+        const completedStoryContainer = document.getElementById('completed-story-container');
+        const finalStoryOutput = document.getElementById('final-story-output');
+        const userInputSection = document.getElementById('user-input-section');
+        const userCustomTextArea = document.getElementById('user-custom-text');
+        const addCustomTextButton = document.getElementById('add-custom-text-button');
+
+        let currentStepIndex = 0;
+        let storySegments = []; 
+        let currentAuthor = "";
+        let currentAuthorNameOnly = ""; // 이름만 (Apps Script 전송용)
+        let currentAuthorIdOnly = "";   // 학번만 (Apps Script 전송용)
+        let isDecisionPhase = false;
+
+        const buttonColorPalettes = [ /* 이전과 동일 */ ];
+        const storySteps = [ /* 이전과 동일 */ ];
+
+        function showMessage(message, type = 'info') { /* 이전과 동일 */ }
+        function parsePastedStory(pastedText) { /* 이전과 동일 (개선된 버전 사용) */ 
+            const segments = [];
+            const lines = pastedText.split('\n');
+            let currentAuthorForParse = "알 수 없는 작성자";
+            let currentTextForParse = "";
+
+            const authorRegex = /^\[작성자:\s*(.+?)\s*\]$/; 
+            const separatorRegex = /^~+.*?~+$/; 
+            const titleRegex = /^===.*?===$/; // 제목 형식 추가
+
+            for (const line of lines) {
+                const authorMatch = line.match(authorRegex);
+                const separatorMatch = line.match(separatorRegex);
+                const titleMatch = line.match(titleRegex);
+
+                if (titleMatch) { // 제목 줄은 건너뜀
+                    continue;
+                } else if (authorMatch) {
+                    if (currentTextForParse.trim() !== "") {
+                        segments.push({ author: currentAuthorForParse, text: currentTextForParse.trim() + " " });
+                    }
+                    currentAuthorForParse = authorMatch[1];
+                    currentTextForParse = "";
+                } else if (separatorMatch) {
+                     if (currentTextForParse.trim() !== "") {
+                        segments.push({ author: currentAuthorForParse, text: currentTextForParse.trim() + " " });
+                    }
+                    segments.push({ author: "알림", text: line.trim() + "\n\n" });
+                    currentAuthorForParse = "알 수 없는 작성자"; 
+                    currentTextForParse = "";
+                } else if (line.trim() !== "") {
+                    currentTextForParse += line + "\n";
+                }
+            }
+            if (currentTextForParse.trim() !== "") {
+                segments.push({ author: currentAuthorForParse, text: currentTextForParse.trim() + " " });
+            }
+            return segments;
+        }
+        function updateStoryOutput() { /* 이전과 동일 */ }
+        
+        // Apps Script로 데이터 전송하는 함수
+        async function sendToAppsScript(segmentData) {
+            if (!APPS_SCRIPT_WEB_APP_URL) {
+                console.warn("Apps Script Web App URL이 설정되지 않았습니다. Sheets 저장을 건너뜁니다.");
+                return; // URL 없으면 실행 안 함
+            }
+
+            const dataToSend = {
+                name: currentAuthorNameOnly, // 이름만
+                id: currentAuthorIdOnly,     // 학번만
+                segment: segmentData.text    // 이야기 조각 텍스트
+            };
+
+            try {
+                const response = await fetch(APPS_SCRIPT_WEB_APP_URL, {
+                    method: "POST",
+                    mode: "no-cors", // Apps Script는 보통 no-cors로 해야 간단히 작동 (응답은 못 받음)
+                                     // 또는 Apps Script 쪽에서 CORS 헤더를 설정해야 함
+                                     // 여기서는 응답을 받지 않는 형태로 단순화
+                    // headers: { "Content-Type": "application/json", }, // mode: 'no-cors'에서는 Content-Type 설정이 제한될 수 있음
+                    // body: JSON.stringify(dataToSend)
+                    
+                    // Apps Script에서 e.postData.contents로 받으려면 text/plain으로 보내는 것이 더 안정적일 수 있음
+                    // 또는 URLSearchParams 사용
+                     body: new URLSearchParams(dataToSend).toString(), // form-data 형식으로 전송
+                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+
+                });
+                // mode: 'no-cors'에서는 응답을 확인할 수 없음. 성공했다고 가정.
+                showMessage("이야기 조각이 Google Sheets로 전송되었습니다 (또는 시도됨).", "info");
+                console.log("Data sent to Apps Script (or attempted):", dataToSend);
+
+            } catch (error) {
+                console.error("Apps Script로 데이터 전송 중 오류:", error);
+                showMessage("이야기 조각을 Sheets로 전송 중 통신 오류가 발생했습니다.", "error");
+            }
+        }
+
+
+        startStoryButton.addEventListener('click', () => {
+            const name = studentNameInput.value.trim();
+            const id = studentIdInput.value.trim();
+            const pastedText = pasteStoryArea.value.trim();
+
+            if (!name || !id) {
+                showMessage("이름과 학번(별명)을 모두 입력해주세요!", "error");
+                return;
+            }
+            currentAuthorNameOnly = name;
+            currentAuthorIdOnly = id;
+            currentAuthor = `${name} (${id})`;
+            
+            if (pastedText) {
+                storySegments = parsePastedStory(pastedText);
+                const lastSegment = storySegments.length > 0 ? storySegments[storySegments.length - 1] : null;
+                if (lastSegment && lastSegment.author === "알림" && lastSegment.text.includes("다음 작가의 이야기")) {
+                    currentStepIndex = 1; 
+                } else if (storySegments.length > 0) {
+                    currentStepIndex = 1; 
+                    storySegments.push({ author: "알림", text: "\n~~~~~~~~~~~~~ 다음 작가의 이야기 ~~~~~~~~~~~~~\n" });
+                } else { 
+                    storySegments = [];
+                    currentStepIndex = 0;
+                }
+                showMessage("이전 이야기를 성공적으로 불러왔습니다! 이야기를 이어가세요.", "success");
+            } else { 
+                storySegments = [];
+                currentStepIndex = 0;
+                showMessage(`${currentAuthor}님, 환영합니다! 새로운 이야기를 시작하세요.`, "success");
+            }
+            
+            initialSetupSection.classList.add('hidden');
+            mainStoryInterface.classList.remove('hidden');
+            completedStoryContainer.classList.add('hidden'); 
+            
+            renderStep();
+        });
+
+        function renderStep() { /* 이전과 거의 동일, Apps Script 호출 부분 없음 */ }
+        
+        addCustomTextButton.addEventListener('click', () => {
+            const customText = userCustomTextArea.value.trim();
+            if (customText) {
+                const newSegment = { author: currentAuthor, text: customText + " " };
+                handleChoice(newSegment.text, true); // isCustom = true
+                userInputSection.classList.add('hidden');
+                userCustomTextArea.value = "";
+            } else {
+                showMessage("추가할 내용을 입력해주세요!", "error");
+            }
+        });
+
+        function handleChoice(segmentText, isCustom = false) {
+            const newSegmentData = { author: currentAuthor, text: segmentText };
+            storySegments.push(newSegmentData);
+            sendToAppsScript(newSegmentData); // 선택 또는 직접 입력 시 Apps Script로 전송
+
+            currentStepIndex++;
+            if (currentStepIndex >= storySteps.length) { 
+                handleEndOfChapter();
+            } else {
+                renderStep();
+            }
+            choicesContainer.querySelectorAll('.choice-button').forEach(btn => btn.disabled = false);
+            showMessage("좋아요! 이야기가 이어지고 Sheets에 기록(시도)되었습니다.", "success");
+        }
+
+        function handleEndOfChapter() { /* 이전과 동일 */ }
+        function finalizeStory() { /* 이전과 동일 */ }
+
+        function continueStoryRelay() { // 다음 학생에게 넘길 때
+            isDecisionPhase = false;
+            choicesContainer.innerHTML = ""; 
+            
+            mainStoryInterface.classList.add('hidden');
+            initialSetupSection.classList.remove('hidden'); 
+            
+            studentNameInput.value = ""; 
+            studentIdInput.value = "";
+            pasteStoryArea.value = ""; // 붙여넣기 영역 초기화
+            
+            // currentStepIndex는 새 학생이 붙여넣은 내용에 따라 startStoryButton에서 결정됨
+            // 또는 여기서 강제로 currentStepIndex = 0; 으로 설정할 수도 있음
+            
+            updateStoryOutput(); 
+            showMessage("다음 작가님, 정보를 입력하고 이전 이야기를 붙여넣거나 새로 시작하세요!", "info");
+        }
+        
+        resetButton.addEventListener('click', () => {
+            if (confirm("정말로 모든 내용을 지우고 완전히 처음부터 새로 시작하시겠습니까? 이 작업은 Google Sheets에 이미 저장된 내용을 지우지는 않습니다.")) {
+                // 클라이언트 측 상태만 초기화
+                isDecisionPhase = false; 
+                currentStepIndex = 0;
+                storySegments = [];
+                currentAuthor = "";
+                currentAuthorNameOnly = "";
+                currentAuthorIdOnly = "";
+                
+                mainStoryInterface.classList.add('hidden');
+                completedStoryContainer.classList.add('hidden');
+                
+                initialSetupSection.classList.remove('hidden');
+                studentNameInput.value = "";
+                studentIdInput.value = "";
+                pasteStoryArea.value = "";
+                studentNameInput.focus();
+                
+                updateStoryOutput();
+                showMessage("모든 이야기가 웹앱에서 초기화되었습니다. 작가 정보를 입력하고 새로 시작하세요.", "info");
+            }
+        });
+
+        copyCurrentStoryButton.addEventListener('click', () => { /* 이전과 동일 */ });
+
+        window.onload = () => { /* 이전과 동일 */ };
+
+    </script>
+</body>
+</html>
