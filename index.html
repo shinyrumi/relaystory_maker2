@@ -92,7 +92,7 @@
 
     <div class="container-wrapper p-6 sm:p-10 rounded-3xl w-full max-w-4xl">
         <header class="mb-10 text-center">
-            <img src="https://placehold.co/130x130/fde68a/f59e0b?text=Sheets&font=Gaegu" alt="시트 저장 아이콘" class="mx-auto mb-5 rounded-full shadow-xl border-4 border-white">
+            <img src="https://placehold.co/130x130/fde68a/f59e0b?text=이야기&font=Gaegu" alt="이야기 아이콘" class="mx-auto mb-5 rounded-full shadow-xl border-4 border-white">
             <h1 class="title-text text-orange-500">릴레이 이야기 공작소 📝</h1>
             <p class="text-slate-700 mt-4 text-xl font-gaegu">친구들과 함께 상상의 나래를 펼쳐 Google Sheets에 기록해봐요!</p>
         </header>
@@ -121,7 +121,7 @@
                 <img src="https://placehold.co/60x60/d1d5db/4b5563?text=Idea&font=NanumPenScript" alt="아이디어 아이콘" class="absolute top-[-25px] left-[-25px] transform rotate-[-20deg] opacity-80">
                 <h2 id="stage-name-display" class="story-stage-name mb-2"></h2>
                 <p id="stage-prompt-display" class="story-stage-prompt"></p>
-                <p id="instruction-text-display" class="instruction-text mt-3">아래 선택지를 고르거나 직접 내용을 추가하여 이야기를 이어가세요.</p>
+                <p id="instruction-text-display" class="instruction-text mt-3">아래 선택지를 고르거나 직접 내용을 추가하여 이야기를 이어가세요.</p> 
             </div>
 
             <div id="choices-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6"></div>
@@ -162,10 +162,9 @@
         // #############################################################################
         // ## 중요! 아래 변수에 선생님의 Google Apps Script 웹 앱 URL을 넣어주세요! ##
         // #############################################################################
-        const APPS_SCRIPT_WEB_APP_URL = ""; // 예: "https://script.google.com/macros/s/여기에_선생님의_웹앱_ID/exec";
+        const APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxxcq6-kdzMLOz4WQqqkdLFkvRhORmvEmzMqzCkTuVEJGETTg1C280VBg26jUrpfcX5/exec"; // 예: "https://script.google.com/macros/s/여기에_선생님의_웹앱_ID/exec";
         // 만약 APPS_SCRIPT_WEB_APP_URL이 비어있으면, Google Sheets 저장은 시도되지 않습니다.
 
-        // DOM 요소들 (이전과 유사)
         const initialSetupSection = document.getElementById('initial-setup-section');
         const studentNameInput = document.getElementById('student-name');
         const studentIdInput = document.getElementById('student-id');
@@ -190,30 +189,69 @@
         let currentStepIndex = 0;
         let storySegments = []; 
         let currentAuthor = "";
-        let currentAuthorNameOnly = ""; // 이름만 (Apps Script 전송용)
-        let currentAuthorIdOnly = "";   // 학번만 (Apps Script 전송용)
+        let currentAuthorNameOnly = ""; 
+        let currentAuthorIdOnly = "";   
         let isDecisionPhase = false;
 
-        const buttonColorPalettes = [ /* 이전과 동일 */ ];
-        const storySteps = [ /* 이전과 동일 */ ];
+        const buttonColorPalettes = [ 
+            ["from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 border-sky-500"],
+            ["from-emerald-400 to-green-500 hover:from-emerald-500 hover:to-green-600 border-emerald-500"],
+            ["from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 border-amber-500"],
+            ["from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600 border-rose-500"],
+            ["from-violet-400 to-purple-500 hover:from-violet-500 hover:to-purple-600 border-violet-500"],
+            ["from-teal-400 to-cyan-500 hover:from-teal-500 hover:to-cyan-600 border-teal-500"],
+            ["from-fuchsia-400 to-pink-600 hover:from-fuchsia-500 hover:to-pink-700 border-fuchsia-500"]
+        ];
+        const storySteps = [ 
+            { stageName: "🌱 발단 1: 주인공은 누구?", prompt: "이야기를 이끌어갈 주인공을 선택해주세요!", options: [ { text: "용감무쌍한 기사 아서", segment: "먼 옛날, 아발론 왕국에는 용감무쌍한 기사 아서가 살고 있었습니다. 그의 심장은 사자처럼 뜨거웠고, 검술은 바람처럼 날렵했죠. " }, { text: "신비로운 숲의 마법사 엘리나", segment: "고요하고 신비로운 수정 숲 가장 깊은 곳, 지혜로운 마법사 엘리나가 별빛을 벗삼아 홀로 고대의 마법을 탐구했습니다. 그녀의 눈은 밤하늘처럼 깊었죠. " }, { text: "호기심 천국! 꼬마 탐험가 리오", segment: "세상의 온갖 비밀을 파헤치고 싶어 안달이 난, 호기심 많고 발랄한 꼬마 탐험가 리오가 있었습니다. 리오의 가방엔 언제나 신기한 물건들이 가득했죠. " } ] },
+            { stageName: "✨ 발단 2: 사건의 불꽃", prompt: "주인공에게 어떤 흥미진진한 사건이 펼쳐질까요?", options: [ { text: "낡은 지도 속 비밀의 예언", segment: "어느 날, 아서는 먼지 쌓인 왕궁 도서관 구석에서 빛바랜 양피지 지도를 발견했습니다. 지도에는 '세상을 구할 전설의 성검, 칼리번'의 위치가 신비로운 문자로 새겨져 있었어요! " }, { text: "마을을 뒤덮은 어둠의 그림자", segment: "엘리나가 사랑하는 수정 숲에 정체 모를 어둠의 그림자가 드리우기 시작했습니다. 숲의 요정들이 시름시름 앓고, 수정꽃이 빛을 잃어가자 엘리나는 이 위기의 근원을 찾아 모험을 떠나기로 결심합니다. " }, { text: "숨겨진 세계로 통하는 마법의 문", segment: "잊혀진 고대 사원을 탐험하던 리오는 벽에 그려진 이상한 문양을 만지다 그만, 별들처럼 반짝이는 미지의 세계로 통하는 마법의 문을 우연히 열고 말았습니다! " } ] },
+            { stageName: "🚀 전개 1: 첫 번째 시련", prompt: "모험의 첫걸음, 주인공 앞에는 어떤 도전이 기다리고 있을까요?", options: [ { text: "말하는 나무의 알쏭달쏭 수수께끼", segment: "전설의 성검을 찾아가는 숲길, 아서는 길을 가로막는 거대한 말하는 나무와 마주쳤습니다. 나무는 '세 가지 지혜의 수수께끼'를 모두 맞춰야만 길을 열어주겠다고 으름장을 놓았습니다. " }, { text: "어둠에 물든 숲의 괴수", segment: "엘리나는 숲을 병들게 하는 어둠의 근원지를 향하던 중, 검은 안개에 휩싸인 거대한 숲의 괴수 '그림자발톱'과 맞닥뜨렸습니다. 녀석의 포효는 온 숲을 뒤흔들었죠. " }, { text: "중력이 뒤죽박죽! 이상한 방", segment: "마법의 문을 통과한 리오는 천장과 바닥이 뒤바뀌고, 물건들이 공중에 떠다니는 이상한 방에 도착했습니다. 한 발짝만 잘못 디뎌도 아찔한 상황이었죠! " } ] },
+            { stageName: "🤝 전개 2: 뜻밖의 만남", prompt: "위기의 순간, 주인공을 도와줄 특별한 조력자는 누구일까요?", options: [ { text: "구름 위의 현자, 백금용", segment: "수수께끼 앞에서 끙끙대던 아서 앞에, 구름 위 높은 산봉우리에 은둔하던 지혜로운 백금용 '아르겐토스'가 홀연히 나타나 신비로운 조언을 건넸습니다. " }, { text: "반짝이는 희망, 달빛 요정", segment: "그림자발톱의 강력한 공격에 위기에 처한 엘리나 앞에, 숲에 마지막 남은 순수한 빛의 힘을 간직한 작은 달빛 요정 '루미'가 나타나 엘리나의 마법 지팡이에 새로운 힘을 불어넣어 주었습니다. " }, { text: "길 위의 동반자, 유쾌한 발명가", segment: "이상한 방에서 길을 잃고 헤매던 리오를 도와준 것은, 먼저 이 세계에 와서 기상천외한 발명품들을 만들고 있던 유쾌한 발명가 '에디슨' 할아버지였습니다. 둘은 신나게 함께 길을 찾기로 합니다. " } ] },
+            { stageName: "💥 위기: 운명의 갈림길", prompt: "주인공은 마침내 가장 큰 위협 또는 갈등과 정면으로 마주합니다!", options: [ { text: "성검을 지키는 고대의 그림자 기사", segment: "마침내 성검 칼리번이 잠든 제단에 도달한 아서. 하지만 검은 과거의 용맹한 영혼이 깃든 강력한 그림자 기사에 의해 지켜지고 있었고, 기사는 아서의 진정한 용기를 시험하려 합니다. " }, { text: "옛 친구의 배신, 타락한 대마법사", segment: "엘리나는 숲 파괴의 배후가 바로 자신의 옛 가장 친한 친구이자 위대한 마법사였던 '세라피나'가 어둠의 힘에 타락했기 때문임을 알게 됩니다. 세라피나는 엘리나에게 함께 세상을 지배하자고 유혹합니다. " }, { text: "세계의 균형을 위협하는 혼돈의 소용돌이", segment: "리오와 에디슨 할아버지는 이 차원의 심장부에서, 모든 세계의 균형을 빨아들여 무로 돌리려는 거대한 '혼돈의 소용돌이'가 걷잡을 수 없이 커지고 있다는 사실을 발견합니다. " } ] },
+            { stageName: "🌟 절정: 빛나는 용기", prompt: "절체절명의 위기! 주인공은 이 순간을 어떻게 극복할까요?", options: [ { text: "마음의 검으로 승리하다", segment: "아서는 그림자 기사와의 숨 막히는 결투 끝에, 단순한 무력이 아닌 백성을 지키고자 하는 순수한 마음과 진정한 용기를 증명합니다. 이에 감응한 성검 칼리번은 스스로 아서의 손에 들려 빛을 발합니다! " }, { text: "우정의 빛으로 어둠을 물리치다", segment: "엘리나는 세라피나의 유혹을 단호히 뿌리치고, 과거 함께 했던 소중한 추억과 우정의 힘을 담은 정화의 마법을 시전합니다. 세라피나의 마음속 깊은 곳에 남아있던 작은 빛이 어둠을 몰아내기 시작합니다. " }, { text: "상상력과 협동으로 균형을 되찾다", segment: "리오와 에디슨 할아버지는 절망하지 않고, 리오의 빛나는 상상력과 에디슨 할아버지의 기발한 발명품들을 총동원합니다. 둘의 완벽한 협동으로 '혼돈의 소용돌이'의 에너지를 역전시켜 세계의 균형을 되찾는데 성공합니다! " } ] },
+            { stageName: "🌈 결말: 새로운 내일", prompt: "모든 시련을 이겨낸 주인공의 이야기는 어떻게 아름답게 마무리될까요?", options: [ { text: "평화의 시대를 연 위대한 영웅왕", segment: "아서는 성검 칼리번의 힘으로 왕국을 위협하던 모든 어둠을 물리치고, 백성들의 뜨거운 지지 속에 아발론의 위대한 영웅왕으로 추대되었습니다. 그의 통치 아래 왕국에는 영원한 평화와 번영의 시대가 열렸습니다. " }, { text: "생명의 숲을 지키는 대현자", segment: "엘리나는 정화된 수정 숲과, 마음을 되찾은 세라피나와 함께 숲의 새로운 수호자이자 대현자가 되었습니다. 그녀의 지혜와 마법은 모든 생명과 조화롭게 어우러져 숲을 더욱 신비롭고 풍요로운 낙원으로 가꾸었습니다. " }, { text: "끝없는 우주를 향한 꿈의 탐험가", segment: "리오와 에디슨 할아버지는 자신들이 지켜낸 아름다운 차원을 뒤로하고, 직접 만든 반짝이는 우주선 '꿈나래호'를 타고 아직 아무도 가보지 못한 신비로운 우주와 새로운 차원을 향한 가슴 뛰는 탐험을 다시 시작했습니다. 그들의 모험은 이제 막 시작된 것이죠! " } ] }
+        ];
 
-        function showMessage(message, type = 'info') { /* 이전과 동일 */ }
-        function parsePastedStory(pastedText) { /* 이전과 동일 (개선된 버전 사용) */ 
+        function showMessage(message, type = 'info') { 
+            const messageBox = document.getElementById('message-box');
+            messageBox.textContent = message;
+            const baseClasses = 'fixed bottom-5 left-1/2 p-3 rounded-lg shadow-xl z-[1000] opacity-0 invisible transition-all duration-300 font-gaegu text-lg';
+            
+            let typeClasses = 'bg-slate-700 text-white border-2 border-slate-500';
+            if (type === 'success') {
+                typeClasses = 'bg-green-500 text-white border-2 border-green-700';
+            } else if (type === 'error') {
+                typeClasses = 'bg-red-500 text-white border-2 border-red-700';
+            }
+            messageBox.className = `${baseClasses} ${typeClasses}`;
+            
+            messageBox.classList.add('show');
+            messageBox.classList.remove('opacity-0', 'invisible', 'transform', '-translate-x-1/2');
+            messageBox.classList.add('opacity-100', 'visible');
+            messageBox.style.transform = 'translateX(-50%) translateY(-10px)';
+
+            setTimeout(() => {
+                messageBox.classList.remove('show', 'opacity-100', 'visible');
+                messageBox.classList.add('opacity-0', 'invisible');
+                messageBox.style.transform = 'translateX(-50%)';
+            }, 3000);
+        }
+
+        function parsePastedStory(pastedText) { 
             const segments = [];
             const lines = pastedText.split('\n');
             let currentAuthorForParse = "알 수 없는 작성자";
             let currentTextForParse = "";
-
             const authorRegex = /^\[작성자:\s*(.+?)\s*\]$/; 
             const separatorRegex = /^~+.*?~+$/; 
-            const titleRegex = /^===.*?===$/; // 제목 형식 추가
+            const titleRegex = /^===.*?===$/; 
 
             for (const line of lines) {
                 const authorMatch = line.match(authorRegex);
                 const separatorMatch = line.match(separatorRegex);
                 const titleMatch = line.match(titleRegex);
 
-                if (titleMatch) { // 제목 줄은 건너뜀
+                if (titleMatch) { 
                     continue;
                 } else if (authorMatch) {
                     if (currentTextForParse.trim() !== "") {
@@ -237,46 +275,57 @@
             }
             return segments;
         }
-        function updateStoryOutput() { /* 이전과 동일 */ }
+
+        function updateStoryOutput() { 
+            storyOutput.innerHTML = ""; 
+            if (storySegments.length === 0) {
+                storyOutput.textContent = "이야기가 여기에 스케치됩니다...";
+                return;
+            }
+            storySegments.forEach(seg => {
+                const segmentDiv = document.createElement('div');
+                segmentDiv.className = 'story-segment';
+                
+                const authorSpan = document.createElement('span');
+                authorSpan.className = 'segment-author';
+                authorSpan.textContent = `작성자: ${seg.author}`;
+                segmentDiv.appendChild(authorSpan);
+
+                const cleanedText = seg.text.trim().replace(/\s+/g, ' ');
+                const textNode = document.createTextNode(cleanedText + " "); 
+                segmentDiv.appendChild(textNode);
+                
+                storyOutput.appendChild(segmentDiv);
+            });
+        }
         
-        // Apps Script로 데이터 전송하는 함수
         async function sendToAppsScript(segmentData) {
             if (!APPS_SCRIPT_WEB_APP_URL) {
                 console.warn("Apps Script Web App URL이 설정되지 않았습니다. Sheets 저장을 건너뜁니다.");
-                return; // URL 없으면 실행 안 함
+                return; 
             }
-
             const dataToSend = {
-                name: currentAuthorNameOnly, // 이름만
-                id: currentAuthorIdOnly,     // 학번만
-                segment: segmentData.text    // 이야기 조각 텍스트
+                name: currentAuthorNameOnly, 
+                id: currentAuthorIdOnly,     
+                segment: segmentData.text    
             };
+            console.log("Sending to Apps Script:", dataToSend); // 데이터 전송 전 로그
 
             try {
                 const response = await fetch(APPS_SCRIPT_WEB_APP_URL, {
                     method: "POST",
-                    mode: "no-cors", // Apps Script는 보통 no-cors로 해야 간단히 작동 (응답은 못 받음)
-                                     // 또는 Apps Script 쪽에서 CORS 헤더를 설정해야 함
-                                     // 여기서는 응답을 받지 않는 형태로 단순화
-                    // headers: { "Content-Type": "application/json", }, // mode: 'no-cors'에서는 Content-Type 설정이 제한될 수 있음
-                    // body: JSON.stringify(dataToSend)
-                    
-                    // Apps Script에서 e.postData.contents로 받으려면 text/plain으로 보내는 것이 더 안정적일 수 있음
-                    // 또는 URLSearchParams 사용
-                     body: new URLSearchParams(dataToSend).toString(), // form-data 형식으로 전송
-                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-
+                    mode: "no-cors", 
+                    body: new URLSearchParams(dataToSend).toString(), 
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
                 });
-                // mode: 'no-cors'에서는 응답을 확인할 수 없음. 성공했다고 가정.
-                showMessage("이야기 조각이 Google Sheets로 전송되었습니다 (또는 시도됨).", "info");
-                console.log("Data sent to Apps Script (or attempted):", dataToSend);
-
+                // mode: 'no-cors'에서는 응답을 직접 확인할 수 없으므로, 성공했다고 가정하고 메시지 표시
+                showMessage("이야기 조각이 Google Sheets로 전송 시도되었습니다.", "info");
+                console.log("Data send attempt to Apps Script was made.");
             } catch (error) {
                 console.error("Apps Script로 데이터 전송 중 오류:", error);
                 showMessage("이야기 조각을 Sheets로 전송 중 통신 오류가 발생했습니다.", "error");
             }
         }
-
 
         startStoryButton.addEventListener('click', () => {
             const name = studentNameInput.value.trim();
@@ -317,13 +366,72 @@
             renderStep();
         });
 
-        function renderStep() { /* 이전과 거의 동일, Apps Script 호출 부분 없음 */ }
+        function renderStep() {
+            console.log("renderStep 호출됨. currentStepIndex:", currentStepIndex); // 디버깅 로그
+            userInputSection.classList.add('hidden'); 
+            userCustomTextArea.value = ""; 
+            isDecisionPhase = false; 
+            instructionTextDisplay.textContent = "아래 선택지를 고르거나 직접 내용을 추가하여 이야기를 이어가세요.";
+
+            if (currentStepIndex < 0 || currentStepIndex >= storySteps.length) {
+                console.error("잘못된 currentStepIndex:", currentStepIndex, "storySteps 길이:", storySteps.length);
+                showMessage("이야기 단계를 불러오는 데 문제가 발생했습니다. 초기화 후 다시 시도해주세요.", "error");
+                mainStoryInterface.classList.add('hidden');
+                initialSetupSection.classList.remove('hidden');
+                studentNameInput.focus();
+                return;
+            }
+            const currentStep = storySteps[currentStepIndex];
+            console.log("현재 단계 객체:", currentStep); // 디버깅 로그
+
+            if (!currentStep || !currentStep.options || !Array.isArray(currentStep.options)) {
+                console.error("현재 단계 또는 선택지가 유효하지 않습니다:", currentStep);
+                showMessage("현재 이야기 단계의 선택지를 불러올 수 없습니다. 초기화 후 다시 시도해주세요.", "error");
+                mainStoryInterface.classList.add('hidden');
+                initialSetupSection.classList.remove('hidden');
+                studentNameInput.focus();
+                return;
+            }
+            console.log("현재 단계 선택지:", currentStep.options); // 디버깅 로그
+
+            stageNameDisplay.textContent = currentStep.stageName;
+            stagePromptDisplay.textContent = currentStep.prompt;
+            
+            choicesContainer.innerHTML = ""; 
+
+            const currentPalette = buttonColorPalettes[currentStepIndex % buttonColorPalettes.length];
+
+            currentStep.options.forEach((option, index) => { 
+                console.log("선택지 버튼 생성 중:", index, option.text); // 디버깅 로그
+                const button = document.createElement('button');
+                button.textContent = option.text;
+                button.className = `choice-button w-full bg-gradient-to-br ${currentPalette[0]} text-white font-bold py-4 px-5 rounded-xl shadow-lg`;
+                button.onclick = () => handleChoice(option.segment);
+                choicesContainer.appendChild(button);
+            });
+
+            const addOwnChoiceButton = document.createElement('button');
+            addOwnChoiceButton.innerHTML = `✏️ <span class="font-stylish">나만의 문장 추가하기</span>`;
+            addOwnChoiceButton.className = `choice-button w-full bg-gradient-to-br from-gray-300 to-gray-400 hover:from-gray-400 hover:to-gray-500 text-slate-800 border-slate-500 font-bold py-4 px-5 rounded-xl shadow-lg mt-2`;
+            addOwnChoiceButton.onclick = () => {
+                userInputSection.classList.remove('hidden');
+                userCustomTextArea.focus();
+                choicesContainer.querySelectorAll('.choice-button').forEach(btn => {
+                    if (btn !== addOwnChoiceButton) btn.disabled = true; 
+                });
+                addOwnChoiceButton.disabled = true; 
+            };
+            choicesContainer.appendChild(addOwnChoiceButton);
+
+            updateStoryOutput();
+            choicesContainer.querySelectorAll('.choice-button').forEach(btn => btn.disabled = false);
+        }
         
         addCustomTextButton.addEventListener('click', () => {
             const customText = userCustomTextArea.value.trim();
             if (customText) {
                 const newSegment = { author: currentAuthor, text: customText + " " };
-                handleChoice(newSegment.text, true); // isCustom = true
+                handleChoice(newSegment.text, true); 
                 userInputSection.classList.add('hidden');
                 userCustomTextArea.value = "";
             } else {
@@ -334,7 +442,7 @@
         function handleChoice(segmentText, isCustom = false) {
             const newSegmentData = { author: currentAuthor, text: segmentText };
             storySegments.push(newSegmentData);
-            sendToAppsScript(newSegmentData); // 선택 또는 직접 입력 시 Apps Script로 전송
+            sendToAppsScript(newSegmentData); 
 
             currentStepIndex++;
             if (currentStepIndex >= storySteps.length) { 
@@ -346,54 +454,108 @@
             showMessage("좋아요! 이야기가 이어지고 Sheets에 기록(시도)되었습니다.", "success");
         }
 
-        function handleEndOfChapter() { /* 이전과 동일 */ }
-        function finalizeStory() { /* 이전과 동일 */ }
+        function handleEndOfChapter() { 
+            isDecisionPhase = true; 
+            stageNameDisplay.textContent = "📖 이야기의 전환점";
+            stagePromptDisplay.textContent = "현재 챕터의 이야기가 마무리되었습니다. 어떻게 할까요?";
+            instructionTextDisplay.textContent = "아래 버튼 중 하나를 선택하여 다음 행동을 결정해주세요.";
+            choicesContainer.innerHTML = ""; 
+            userInputSection.classList.add('hidden'); 
+            storyOutputContainer.classList.remove('hidden'); 
+            updateStoryOutput();
 
-        function continueStoryRelay() { // 다음 학생에게 넘길 때
+            const finalizeBtn = document.createElement('button');
+            finalizeBtn.innerHTML = `🏁 <span class="font-stylish">이야기 여기서 최종 완성!</span>`;
+            finalizeBtn.className = "decision-button choice-button w-full bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-green-600 font-bold py-4 px-5 rounded-xl shadow-lg";
+            finalizeBtn.onclick = finalizeStory;
+            choicesContainer.appendChild(finalizeBtn);
+
+            const continueBtn = document.createElement('button');
+            continueBtn.innerHTML = `릴레이 🚀 <span class="font-stylish">다음 친구에게 넘기기 (새 챕터 시작)</span>`;
+            continueBtn.className = "decision-button choice-button w-full bg-gradient-to-br from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white border-purple-600 font-bold py-4 px-5 rounded-xl shadow-lg mt-3";
+            continueBtn.onclick = continueStoryRelay;
+            choicesContainer.appendChild(continueBtn);
+        }
+        function finalizeStory() { 
+            isDecisionPhase = false;
+            mainStoryInterface.classList.add('hidden');
+            completedStoryContainer.classList.remove('hidden');
+            finalStoryOutput.innerHTML = ""; 
+            storySegments.forEach(seg => {
+                const segmentDiv = document.createElement('div');
+                segmentDiv.className = 'story-segment';
+                const authorSpan = document.createElement('span');
+                authorSpan.className = 'segment-author';
+                authorSpan.textContent = `작성자: ${seg.author}`;
+                segmentDiv.appendChild(authorSpan);
+                const textNode = document.createTextNode(seg.text.trim() + " ");
+                segmentDiv.appendChild(textNode);
+                finalStoryOutput.appendChild(segmentDiv);
+            });
+            resetButton.textContent = "✨ 새 이야기 완전 처음부터 시작하기 ✨";
+            copyCurrentStoryButton.classList.add('hidden'); 
+            showMessage("짜잔! 모두의 이야기가 완성되었어요!", "success");
+        }
+
+        function continueStoryRelay() { 
             isDecisionPhase = false;
             choicesContainer.innerHTML = ""; 
-            
             mainStoryInterface.classList.add('hidden');
             initialSetupSection.classList.remove('hidden'); 
-            
             studentNameInput.value = ""; 
             studentIdInput.value = "";
-            pasteStoryArea.value = ""; // 붙여넣기 영역 초기화
-            
-            // currentStepIndex는 새 학생이 붙여넣은 내용에 따라 startStoryButton에서 결정됨
-            // 또는 여기서 강제로 currentStepIndex = 0; 으로 설정할 수도 있음
-            
+            pasteStoryArea.value = ""; 
             updateStoryOutput(); 
             showMessage("다음 작가님, 정보를 입력하고 이전 이야기를 붙여넣거나 새로 시작하세요!", "info");
         }
         
         resetButton.addEventListener('click', () => {
             if (confirm("정말로 모든 내용을 지우고 완전히 처음부터 새로 시작하시겠습니까? 이 작업은 Google Sheets에 이미 저장된 내용을 지우지는 않습니다.")) {
-                // 클라이언트 측 상태만 초기화
                 isDecisionPhase = false; 
                 currentStepIndex = 0;
                 storySegments = [];
                 currentAuthor = "";
                 currentAuthorNameOnly = "";
                 currentAuthorIdOnly = "";
-                
                 mainStoryInterface.classList.add('hidden');
                 completedStoryContainer.classList.add('hidden');
-                
                 initialSetupSection.classList.remove('hidden');
                 studentNameInput.value = "";
                 studentIdInput.value = "";
                 pasteStoryArea.value = "";
                 studentNameInput.focus();
-                
                 updateStoryOutput();
                 showMessage("모든 이야기가 웹앱에서 초기화되었습니다. 작가 정보를 입력하고 새로 시작하세요.", "info");
             }
         });
 
-        copyCurrentStoryButton.addEventListener('click', () => { /* 이전과 동일 */ });
+        copyCurrentStoryButton.addEventListener('click', () => { 
+            let fullStoryText = "=== 릴레이 이야기 ===\n\n";
+            storySegments.forEach(seg => {
+                if (seg.author === "알림") { 
+                    fullStoryText += `${seg.text.trim()}\n\n`;
+                } else {
+                    fullStoryText += `[작성자: ${seg.author}]\n${seg.text.trim()}\n\n`;
+                }
+            });
+            navigator.clipboard.writeText(fullStoryText.trim())
+                .then(() => {
+                    showMessage("현재까지의 이야기가 클립보드에 복사되었습니다! 다음 친구에게 전달해주세요.", "success");
+                })
+                .catch(err => {
+                    showMessage("이야기 복사에 실패했습니다. 다시 시도해주세요.", "error");
+                    console.error('Failed to copy story: ', err);
+                });
+        });
 
-        window.onload = () => { /* 이전과 동일 */ };
+        window.onload = () => { 
+            isDecisionPhase = false; 
+            initialSetupSection.classList.remove('hidden');
+            mainStoryInterface.classList.add('hidden');
+            completedStoryContainer.classList.add('hidden');
+            studentNameInput.focus();
+            showMessage("작가님, 정보를 입력하고 이야기 만들기를 시작하세요!");
+        };
 
     </script>
 </body>
